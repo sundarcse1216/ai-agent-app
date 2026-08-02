@@ -1,0 +1,103 @@
+ACME CORPORATION — EMPLOYEE HANDBOOK
+Version 3.2 | Effective Date: January 1, 2025
+=======================================================
+
+1. WELCOME
+----------
+Welcome to ACME Corporation. This handbook outlines the company's policies,
+expectations, and the benefits available to all employees. Please read it
+carefully and keep a copy for your reference.
+
+2. COMPANY VALUES
+-----------------
+- Integrity: We act with honesty and transparency in everything we do.
+- Innovation: We encourage creative thinking and continuous improvement.
+- Collaboration: We work together across teams to achieve shared goals.
+- Respect: We treat every individual with dignity and fairness.
+
+3. WORK HOURS AND ATTENDANCE
+-----------------------------
+Standard office hours are Monday to Friday, 9:00 AM to 6:00 PM.
+Employees are expected to be punctual. Flexible working arrangements
+(flexitime or remote work) must be approved by the direct manager.
+
+Core hours when all employees must be available: 10:00 AM to 4:00 PM.
+
+Repeated tardiness or unexplained absences will be subject to a formal
+performance improvement process.
+
+4. CODE OF CONDUCT
+-------------------
+Employees must maintain professional behaviour at all times, both inside
+and outside the workplace when representing the company.
+
+Prohibited conduct includes:
+- Harassment, bullying, or discrimination of any kind
+- Unauthorised disclosure of confidential company information
+- Misuse of company assets, including IT systems
+- Conflicts of interest that are not declared to HR
+
+Violations of the code of conduct may result in disciplinary action,
+up to and including termination.
+
+5. PERFORMANCE REVIEWS
+------------------------
+Employees receive a formal performance review twice per year:
+- Mid-Year Review: July
+- Annual Review: December
+
+Reviews assess competencies, goal achievement, and overall contribution.
+Salary increments and promotions are linked to performance ratings.
+
+6. DRESS CODE
+--------------
+Business casual attire is expected Monday through Thursday.
+Casual dress is permitted on Fridays.
+Client-facing events require business formal attire.
+
+7. COMMUNICATION AND CONFIDENTIALITY
+--------------------------------------
+All company communications (email, Slack, etc.) on company devices
+are subject to monitoring in accordance with applicable law.
+
+Employees must not share proprietary information, client data, or
+internal financials with unauthorised parties, during or after employment.
+
+A Non-Disclosure Agreement (NDA) is signed upon joining and remains
+in effect for two years post-employment.
+
+8. DISCIPLINARY PROCESS
+-------------------------
+Step 1: Verbal Warning
+Step 2: Written Warning
+Step 3: Final Written Warning
+Step 4: Termination
+
+Serious misconduct (fraud, violence, gross negligence) may bypass
+earlier steps and result in immediate dismissal.
+
+9. GRIEVANCE PROCEDURE
+------------------------
+Employees who have a workplace grievance should:
+1. Raise the issue informally with their line manager.
+2. If unresolved, submit a formal grievance form to HR.
+3. HR will investigate within 10 business days.
+4. A written outcome will be provided to the employee.
+
+10. HEALTH AND SAFETY
+-----------------------
+All employees are responsible for maintaining a safe working environment.
+Emergency exits and first-aid kits are located on every floor.
+Workplace accidents must be reported to HR and Facilities within 24 hours.
+
+11. RESIGNATION AND OFFBOARDING
+---------------------------------
+The standard notice period is:
+- Probation period: 1 week
+- Up to 2 years of service: 1 month
+- More than 2 years of service: 2 months
+
+Exit interviews are conducted by HR on the last working day.
+All company assets (laptop, access cards, etc.) must be returned.
+
+END OF HANDBOOK

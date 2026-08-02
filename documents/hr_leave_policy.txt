@@ -1,0 +1,100 @@
+ACME CORPORATION — LEAVE POLICY
+Version 2.1 | Effective Date: January 1, 2025
+=======================================================
+
+1. OVERVIEW
+------------
+This policy outlines the types of leave available to all full-time employees
+of ACME Corporation. Leave entitlements are pro-rated for part-time employees.
+
+2. ANNUAL LEAVE
+----------------
+Full-time employees are entitled to:
+- 0–2 years of service: 14 days per year
+- 2–5 years of service: 18 days per year
+- 5+ years of service: 21 days per year
+
+Annual leave must be applied for at least 5 working days in advance.
+Unused annual leave may be carried over up to a maximum of 5 days into the
+following calendar year. Leave balance exceeding this cap will be forfeited.
+
+3. SICK LEAVE
+--------------
+Employees are entitled to 14 days of paid sick leave per year.
+A medical certificate from a registered doctor is required for absences
+exceeding 2 consecutive days.
+
+Hospitalisation leave is separate:
+- Up to 60 days of paid hospitalisation leave per year (inclusive of
+  the 14 days outpatient sick leave).
+
+4. MATERNITY LEAVE
+-------------------
+Female employees who have been employed for at least 3 months are entitled to:
+- 16 weeks of paid maternity leave for the first two children.
+- 16 weeks of maternity leave (first 8 weeks government-paid, next 8 weeks
+  employer-paid) from the third child onwards.
+
+Notice must be given to HR at least 8 weeks before the expected delivery date.
+
+5. PATERNITY LEAVE
+-------------------
+Male employees are entitled to 2 weeks of paid paternity leave per birth.
+Leave must be taken within 16 weeks of the child's birth.
+
+6. CHILDCARE LEAVE
+-------------------
+Employees with children below 7 years of age are entitled to 6 days of
+paid childcare leave per year.
+
+Employees with children aged 7–12 are entitled to 2 days of extended
+childcare leave per year.
+
+7. COMPASSIONATE LEAVE
+------------------------
+Compassionate leave is granted for bereavement:
+- Death of spouse, child, or parent: 3 days paid leave
+- Death of sibling or parent-in-law: 2 days paid leave
+- Death of other relatives: 1 day paid leave
+
+8. MARRIAGE LEAVE
+------------------
+Employees are entitled to 3 days of paid marriage leave once during their
+employment with the company. This must be taken within 1 month of the
+solemnisation date.
+
+9. STUDY AND EXAMINATION LEAVE
+--------------------------------
+Employees pursuing job-relevant qualifications approved by the company
+are entitled to up to 5 days of paid study leave per year.
+Examination dates must be provided to HR at least 2 weeks in advance.
+
+10. UNPAID LEAVE
+-----------------
+Unpaid leave may be granted at the company's discretion for personal
+reasons beyond the entitlements listed above. Applications must be
+submitted in writing to HR and approved by the department head.
+
+11. PUBLIC HOLIDAYS
+--------------------
+Employees are entitled to all public holidays gazetted by the government.
+If a public holiday falls on a weekend, a substitute day off will be granted
+on the following Monday.
+
+Employees required to work on a public holiday will receive:
+- A replacement day off, OR
+- 1.5x their daily rate as additional pay
+
+12. HOW TO APPLY FOR LEAVE
+----------------------------
+All leave applications must be submitted through the HR portal (hr.acmecorp.internal).
+Approval from the line manager is required before leave is confirmed.
+Last-minute sick leave must be notified to the line manager by 9:00 AM on
+the day of absence, followed by a formal application in the HR portal.
+
+13. LEAVE WITHOUT APPROVAL
+----------------------------
+Absence from work without prior approval or valid reason will be treated as
+unauthorised absence and may result in disciplinary action.
+
+END OF LEAVE POLICY

@@ -1,0 +1,44 @@
+import time
+
+from core.intent_classifier import IntentClassifier
+from core.response_formatter import ResponseFormatter
+from core.router import Router
+from logger import logger
+from ui import Spinner
+
+messages = {
+    "weather": "🌤 Checking weather",
+    "sql": "🗄 Querying database",
+    "recommendation": "🎯 Finding the best event",
+    "rag": "📚 Searching documents",
+    "image": "🎨 Creating your image",
+    "chat": "💬 Thinking"
+}
+
+
+class Controller:
+
+    def __init__(self):
+        self.classifier = IntentClassifier()
+        self.router = Router()
+
+    def process(self, query):
+        logger.info(f"User Query: {query}")
+
+        start = time.time()
+        intent = self.classifier.classify(query)
+        logger.info(f"Detected Intent: {intent}")
+
+        spinner = Spinner(messages[intent])
+        spinner.start()
+        response = self.router.route(intent, query)
+        spinner.stop()
+
+        logger.info("Response generated successfully.")
+        elapsed = time.time() - start
+
+        return ResponseFormatter.success(
+            intent,
+            response,
+            elapsed
+        )
