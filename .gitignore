@@ -1,2 +1,8 @@
 /.venv/
 /outputs/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+/frontend/node_modules/
+/frontend/dist/

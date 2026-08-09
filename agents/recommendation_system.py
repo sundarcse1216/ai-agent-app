@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from agents.base_agent import BaseAgent
-from agents.weather_agent import WeatherAgent
+from core.conversation_context import format_recent_turns
 from core.llm_service import LLMService
 from database.event_repository import EventRepository
 from logger import logger
@@ -10,13 +10,18 @@ from logger import logger
 
 class RecommendationAgent(BaseAgent):
 
-    def __init__(self):
-        self.weather_agent = WeatherAgent()
+    def __init__(self, weather_agent):
+        # Injected rather than constructed here, so Router wires in the
+        # same pooled WeatherAgent instance it already builds for the
+        # "weather" intent instead of this agent building its own second
+        # one. This is the reusable pattern for any future agent-to-agent
+        # dependency: agents declare what they need, Router supplies it.
+        self.weather_agent = weather_agent
         self.event_repository = EventRepository()
 
-    def handle(self, query):
+    def handle(self, query, turns=None):
         try:
-            details = self._extract_details(query)
+            details = self._extract_details(query, turns)
 
             location = details.get("location")
             date = details.get("date")
@@ -40,7 +45,7 @@ class RecommendationAgent(BaseAgent):
                     "• Another location"
                 )
 
-            context = self._build_context(weather, events)
+            context = self._build_context(location, weather, events)
             return self._generate_recommendation(context)
 
         except Exception as e:
@@ -51,7 +56,7 @@ class RecommendationAgent(BaseAgent):
                 "Please try again later."
             )
 
-    def _extract_details(self, query):
+    def _extract_details(self, query, turns=None):
 
         today = datetime.today().strftime("%Y-%m-%d")
 
@@ -63,6 +68,10 @@ class RecommendationAgent(BaseAgent):
             - location
             - date
 
+            If the latest message is missing the location or date but an
+            earlier part of this conversation mentioned it, use that
+            instead.
+            {format_recent_turns(turns)}
             Return ONLY valid JSON.
 
             Return exactly in this format:
@@ -93,12 +102,22 @@ class RecommendationAgent(BaseAgent):
             logger.error(f"Invalid JSON returned by LLM: {response}")
             raise Exception("Failed to extract location and date.")
 
-    def _build_context(self, weather, events):
+    def _build_context(self, location, weather, events):
 
         current = weather["current"]
 
+        # NOTE: events aren't tagged with a city/country in this app's demo
+        # dataset (event["location"] below is a venue name like "Central
+        # Park", not a city) — there's no way to actually filter events by
+        # the requested city. Explicitly naming the city here at least
+        # makes the LLM aware of and reason about what was asked, rather
+        # than silently dropping it — without this, two different cities
+        # with similar weather readings could produce near-identical
+        # recommendations, since nothing in the prompt distinguished them.
         context = f"""
-    Weather
+    City requested: {location}
+
+    Weather in {location}
 
     Condition: {current["condition"]["text"]}
 
@@ -109,6 +128,9 @@ class RecommendationAgent(BaseAgent):
     Wind: {current["wind_kph"]} km/h
 
     Available Events
+    (Note: these are the events on file for this date — they are not
+    necessarily located in {location}. Say so if none of them are a good
+    match for that city.)
 
     """
 
@@ -130,16 +152,15 @@ class RecommendationAgent(BaseAgent):
             system_prompt="""
     You are an intelligent event recommendation assistant.
 
-    Choose the best event.
+    Choose the best event for the requested city and its weather.
 
     Consider
 
-    - Weather
-    - Temperature
+    - The requested city and its weather/temperature
     - Indoor or Outdoor
     - Price
 
-    Explain why.
+    Explain why, referencing the city and its weather explicitly.
 
     Also recommend transportation.
 

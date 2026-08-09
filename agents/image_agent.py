@@ -7,6 +7,7 @@ from openai import OpenAI
 
 from agents.base_agent import BaseAgent
 from config import OPENAI_API_KEY, OUTPUT_IMAGES
+from core.cost_tracking import calculate_openai_cost, record_usage
 from logger import logger
 
 PROMPT_STYLES = {
@@ -105,6 +106,22 @@ class ImageAgent(BaseAgent):
                     size="1024x1024",
                     quality="high"
                 )
+
+                # gpt-image-1 (unlike older DALL-E-style endpoints) reports
+                # token usage on its response despite being an image
+                # endpoint, not a chat one — confirmed via the openai SDK's
+                # ImagesResponse type. Uses the same ambient record_usage()
+                # LLMService's non-streaming calls use: ImageAgent is only
+                # ever invoked through Router.route()'s single, non-
+                # generator dispatch (image generation never streams), so
+                # that's safe here the same way it is for weather/sql/
+                # recommendation (see core/cost_tracking.py's docstring for
+                # why that doesn't hold for streaming calls).
+                if result.usage is not None:
+                    cost = calculate_openai_cost(
+                        "gpt-image-1", result.usage.input_tokens, result.usage.output_tokens
+                    )
+                    record_usage(result.usage.input_tokens, result.usage.output_tokens, cost)
 
                 image_bytes = base64.b64decode(result.data[0].b64_json)
 

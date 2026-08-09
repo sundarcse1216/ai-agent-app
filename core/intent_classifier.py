@@ -1,51 +1,66 @@
+import json
+
+from core.llm_provider_factory import get_llm_provider
+from core.semantic_router import SemanticRouter
+from logger import logger
+
+VALID_INTENTS = ("weather", "rag", "recommendation", "image", "sql", "chat")
+
+_FALLBACK_SYSTEM_PROMPT = """
+You are an intent classification assistant for a multi-agent system.
+
+Classify the user's query into exactly one of these intents:
+- weather: questions about current weather, temperature, forecast, rain, etc.
+- rag: questions about company HR policies/benefits/handbook, or the building specification document
+- recommendation: requests for event, activity, or restaurant recommendations
+- image: requests to generate, draw, create, or design an image
+- sql: questions about employee or department records in the company database
+- chat: general conversation, greetings, or anything that doesn't fit the above
+
+Return ONLY valid JSON in this exact format:
+{"intent": "<one of: weather, rag, recommendation, image, sql, chat>"}
+
+Rules:
+- Return only JSON.
+- Never explain.
+- If genuinely unsure, use "chat".
+"""
+
+
 class IntentClassifier:
+    """Hybrid classifier: a fast embedding-based semantic router
+    (core/semantic_router.py) handles the common case with no LLM call;
+    below its confidence threshold, an LLM call resolves the ambiguous
+    query. Replaces the old pure-keyword-substring matcher."""
 
-    INTENT_KEYWORDS = {
-        "weather": [
-            "weather", "temperature", "forecast", "rain",
-            "sunny", "cloudy", "humidity", "wind", "climate"
-        ],
+    def __init__(self):
+        self._router = SemanticRouter()
 
-        "rag": [
-            # document-type triggers
-            "document", "pdf", "summarize", "summary",
-            "specification", "manual", "report", "contract",
-            "builder", "kitchen", "bedroom", "bathroom",
-            "electrical", "fittings", "provided",
-            # HR / policy triggers (matches handbook, leave policy, benefits guide)
-            "resign", "resignation", "notice period",
-            "leave", "annual leave", "sick leave", "maternity", "paternity",
-            "benefits", "dental", "insurance", "medical",
-            "policy", "policies", "handbook",
-            "probation", "allowance", "conduct",
-            "grievance", "dress code", "offboard",
-        ],
+    def classify(self, query: str) -> str:
+        if not query.strip():
+            return "chat"
 
-        "recommendation": [
-            "recommend", "recommendation", "suggest", "suggestion",
-            "movie", "event", "restaurant"
-        ],
+        intent, scores = self._router.classify(query)
+        if intent is not None:
+            return intent
 
-        "image": [
-            "image", "draw", "generate image", "picture",
-            "photo", "illustration", "logo",
-            "poster", "design", "banner", "flyer"
-        ],
+        logger.info(f"Semantic router below confidence threshold for {query!r}: {scores}")
+        return self._classify_with_llm(query)
 
-        "sql": [
-            "database", "employee", "employees", "sql",
-            "salary", "table", "tables", "record",
-            "records", "department", "departments",
-            "select", "show", "display"
-        ],
-    }
-
-    def classify(self, query: str):
-
-        text = query.lower()
-
-        for intent, keywords in self.INTENT_KEYWORDS.items():
-            if any(keyword in text for keyword in keywords):
+    @staticmethod
+    def _classify_with_llm(query: str) -> str:
+        try:
+            response = get_llm_provider().chat(
+                system_prompt=_FALLBACK_SYSTEM_PROMPT,
+                user_prompt=query,
+                json_mode=True,
+            )
+            response = response.replace("```json", "").replace("```", "").strip()
+            intent = json.loads(response).get("intent")
+            if intent in VALID_INTENTS:
                 return intent
+            logger.error(f"LLM classifier fallback returned invalid intent: {intent!r}")
+        except Exception:
+            logger.exception("LLM classifier fallback failed")
 
         return "chat"

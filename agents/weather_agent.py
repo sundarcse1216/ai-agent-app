@@ -1,10 +1,11 @@
 import json
 
 import requests
-from cachetools import TTLCache
 
 from agents.base_agent import BaseAgent
 from config import WEATHER_API_KEY
+from core.cache import make_cache
+from core.conversation_context import format_recent_turns
 from core.llm_service import LLMService
 from logger import logger
 
@@ -23,7 +24,7 @@ emoji_map = {
     "Thunderstorm": "⛈️",
     "Snow": "❄️"
 }
-weather_cache = TTLCache(maxsize=100, ttl=300)
+weather_cache = make_cache()
 
 
 # AI agent that processes user queries
@@ -97,29 +98,34 @@ class WeatherAgent(BaseAgent):
     {current["last_updated"]}
     """
 
-    def handle(self, user_query):
+    def handle(self, user_query, turns=None):
 
         if not user_query.strip():
-            return "Please enter a valid query with city name."
+            return "Please enter a valid query with a location."
         try:
             response = LLMService.chat(
-                system_prompt="""
+                system_prompt=f"""
             You are an information extraction assistant.
 
-            Extract only the city name.
-
+            Extract the location the user is asking about — a city,
+            region, or country (weatherapi.com accepts any of these, not
+            just cities). If the latest message doesn't name one but an
+            earlier part of this conversation did (including something as
+            indirect as "I'm from X"), use that instead.
+            {format_recent_turns(turns)}
             Return ONLY valid JSON.
 
-            Example:
-            {"location":"Singapore"}
+            Examples:
+            {{"location":"Singapore"}}
+            {{"location":"Malaysia"}}
 
             Rules:
             - Return only JSON.
             - Never explain.
             - Never apologize.
-            - If no city is found, return:
+            - If no location is found anywhere, return:
 
-            {"location":null}
+            {{"location":null}}
             """,
                 user_prompt=user_query,
                 json_mode=True

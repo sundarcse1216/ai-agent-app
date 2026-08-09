@@ -3,6 +3,16 @@ import sys
 import threading
 import time
 
+try:
+    # Windows consoles often default to a legacy codepage (e.g. cp1252)
+    # that can't encode the emoji used in spinner/agent messages, which
+    # crashes this module's background thread with UnicodeEncodeError.
+    # Force UTF-8 on stdout; falls back silently if stdout doesn't support
+    # reconfigure (e.g. certain redirected/piped contexts).
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except (AttributeError, ValueError):
+    pass
+
 
 class Spinner:
 

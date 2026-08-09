@@ -1,6 +1,13 @@
-import ollama
+"""
+Thin backwards-compatible facade over the configured LLMProvider.
 
-from config import OLLAMA_MODEL
+Kept so WeatherAgent, RecommendationAgent, and SQLAgent (and their existing
+tests, which mock LLMService.chat) can keep calling
+LLMService.chat(system_prompt, user_prompt, json_mode=...) unchanged while
+the underlying LLM backend (Ollama vs. OpenAI) becomes swappable via
+core.llm_provider_factory.
+"""
+from core.llm_provider_factory import get_llm_provider
 from exception.llm_unavailable_error import LLMUnavailableError
 from logger import logger
 
@@ -10,28 +17,10 @@ class LLMService:
     @staticmethod
     def chat(system_prompt: str, user_prompt: str, json_mode=False):
         try:
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ]
-
-            if json_mode:
-                response = ollama.chat(
-                    model=OLLAMA_MODEL,
-                    messages=messages,
-                    format="json"
-                )
-            else:
-                response = ollama.chat(
-                    model=OLLAMA_MODEL,
-                    messages=messages
-                )
-            return response["message"]["content"].strip()
+            return get_llm_provider().chat(system_prompt, user_prompt, json_mode=json_mode)
+        except LLMUnavailableError:
+            logger.exception("LLM unavailable")
+            raise
         except Exception as e:
-            logger.exception(f"LLM unavailable {e}")
-            if str(e) == "LLM_UNAVAILABLE":
-                raise LLMUnavailableError (
-                    "❌ The AI service is currently unavailable.\n\n"
-                    "Please try again in a few moments."
-                ) from e
+            logger.exception(f"LLM call failed: {e}")
             raise

@@ -32,15 +32,19 @@ def setup_events_database():
               )
               ''')
 
-    # Sample events
+    # Sample events, pinned to fixed ids 1-4 so re-running this (idempotent,
+    # called on every app startup) refreshes their dates to stay relative to
+    # "today" via OR REPLACE, instead of silently accumulating a new
+    # duplicate batch of rows every day (which OR IGNORE without explicit
+    # ids would do, since new autoincrement rowids never collide).
     events = [
-        ("Summer Concert", "outdoor", "Live music in the park", "Central Park", today.isoformat(), 25.00),
-        ("Art Exhibition", "indoor", "Modern art showcase", "City Gallery", (today + timedelta(days=1)).isoformat(), 50.00),
-        ("Food Festival", "outdoor", "International cuisine", "Waterfront", (today + timedelta(days=2)).isoformat(), 10.00),
-        ("Theater Show", "indoor", "Classical drama", "Grand Theater", (today + timedelta(days=3)).isoformat(), 15.00),
+        (1, "Summer Concert", "outdoor", "Live music in the park", "Central Park", today.isoformat(), 25.00),
+        (2, "Art Exhibition", "indoor", "Modern art showcase", "City Gallery", (today + timedelta(days=1)).isoformat(), 50.00),
+        (3, "Food Festival", "outdoor", "International cuisine", "Waterfront", (today + timedelta(days=2)).isoformat(), 10.00),
+        (4, "Theater Show", "indoor", "Classical drama", "Grand Theater", (today + timedelta(days=3)).isoformat(), 15.00),
     ]
 
-    c.executemany('INSERT OR IGNORE INTO events (name, type, description, location, date, price) VALUES (?,?,?,?,?,?)',
+    c.executemany('INSERT OR REPLACE INTO events (id, name, type, description, location, date, price) VALUES (?,?,?,?,?,?,?)',
                   events)
     conn.commit()
     conn.close()

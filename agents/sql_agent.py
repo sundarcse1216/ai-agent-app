@@ -63,10 +63,17 @@ def generate_sql(question):
     # Remove any markdown code block syntax
     sql = sql.replace('```sql', '').replace('```SQL', '').replace('```', '')
 
-    # Remove any explanatory text before or after the SQL 
+    # Remove any explanatory text before or after the SQL
     sql_lines = [line.strip() for line in sql.split('\n') if line.strip()]
     sql = ' '.join(sql_lines)
-    sql_stripped = sql.strip().lower()
+
+    # LLMs sometimes append trailing prose after the query on the same
+    # line (e.g. "SELECT ...; This returns all employees."), which SQLite
+    # rejects as a second statement. Only one statement is ever allowed
+    # anyway, so keep just what's before the first semicolon.
+    sql = sql.split(';')[0].strip()
+
+    sql_stripped = sql.lower()
     if not (sql_stripped.startswith("select") or sql_stripped.startswith("with")):
         raise ValueError("Unable to generate a valid SQL SELECT query.")
 
@@ -97,8 +104,6 @@ def execute_query(sql):
         end = time.time()
         logger.info(f"Execution Time: {(end - start):.5f} seconds")
         return headers, results
-    except Exception as e:
-        return f"Error: {str(e)}"
     finally:
         conn.close()
 
@@ -152,11 +157,7 @@ class SQLAgent(BaseAgent):
             logger.info(f"Generated SQL: {sql}")
 
             # Execute and format results
-            data = execute_query(sql)
-            # If execute_query returned an error message
-            if isinstance(data, str):
-                return data
-            headers, results = data
+            headers, results = execute_query(sql)
 
             logger.info(performance_tip(sql))
 
