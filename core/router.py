@@ -23,7 +23,7 @@ CONTEXT_AWARE_INTENTS = {"chat", "rag", "weather", "recommendation"}
 STREAMABLE_INTENTS = {"chat", "rag"}
 
 _BUDGET_EXCEEDED_MESSAGE = (
-    "❌ This session has reached its usage limit."
+    "This session has reached its usage limit."
 )
 
 

@@ -61,7 +61,7 @@ LOG_PATH = os.path.join(BASE_DIR, "outputs", "logs", "app.log")
 DATABASE_PATH = os.path.join(BASE_DIR, "database", "company.db")
 EVENTS_DATABASE_PATH = os.path.join(BASE_DIR, "database", "events.db")
 
-MEMORY_WINDOW = 5
+MEMORY_WINDOW = 50
 
 # -----------------------------
 # Per-session cost budget

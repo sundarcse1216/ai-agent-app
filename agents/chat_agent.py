@@ -9,7 +9,7 @@ Remember information shared during the current conversation.
 """
 
 _UNAVAILABLE_MESSAGE = (
-    "❌ The AI service is currently unavailable.\n\n"
+    "The AI service is currently unavailable.\n\n"
     "Please try again in a few moments."
 )
 

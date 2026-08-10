@@ -41,14 +41,15 @@ class IntentClassifier:
             return "chat"
 
         intent, scores = self._router.classify(query)
+        logger.info(f"Semantic router confidence threshold for {query!r}: {intent}: {scores}")
         if intent is not None:
             return intent
 
-        logger.info(f"Semantic router below confidence threshold for {query!r}: {scores}")
         return self._classify_with_llm(query)
 
     @staticmethod
     def _classify_with_llm(query: str) -> str:
+        logger.info("Fallback to LLM Classifier")
         try:
             response = get_llm_provider().chat(
                 system_prompt=_FALLBACK_SYSTEM_PROMPT,

@@ -63,7 +63,7 @@ class OpenAIProvider(LLMProvider):
             return content
         except _UNAVAILABLE_ERRORS as e:
             raise LLMUnavailableError(
-                "❌ The AI service is currently unavailable.\n\n"
+                "The AI service is currently unavailable.\n\n"
                 "Please try again in a few moments."
             ) from e
 

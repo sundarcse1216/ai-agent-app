@@ -58,13 +58,13 @@ class OllamaProvider(LLMProvider):
             return content
         except _CONNECTION_ERRORS as e:
             raise LLMUnavailableError(
-                "❌ The AI service is currently unavailable.\n\n"
+                "The AI service is currently unavailable.\n\n"
                 "Please check that Ollama is running and try again."
             ) from e
         except ollama.ResponseError as e:
             if getattr(e, "status_code", None) and e.status_code >= 500:
                 raise LLMUnavailableError(
-                    "❌ The AI service is currently unavailable.\n\n"
+                    "The AI service is currently unavailable.\n\n"
                     "Please try again in a few moments."
                 ) from e
             raise
