@@ -80,11 +80,13 @@ class Router:
             return _BUDGET_EXCEEDED_MESSAGE
 
         with bind_usage(session.usage):
-            if intent == "rag":
-                # RAG needs usage passed explicitly — its chain calls a
-                # LangChain chat model directly, tracked via a LangChain
-                # callback (agents/rag_agent.py's _UsageCallback), not
-                # LLMProvider's ambient record_usage() the other agents use.
+            if intent in ("rag", "chat"):
+                # RAG and chat both need usage passed explicitly — neither
+                # goes through LLMProvider, so each calls a LangChain chat
+                # model directly and tracks cost via its own LangChain
+                # callback (agents/rag_agent.py's / agents/chat_agent.py's
+                # _UsageCallback), not LLMProvider's ambient record_usage()
+                # the other agents use.
                 response = agent.handle(query, session.turns, usage=session.usage)
             elif intent in CONTEXT_AWARE_INTENTS:
                 response = agent.handle(query, session.turns)
