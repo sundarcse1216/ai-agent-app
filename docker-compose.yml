@@ -1,0 +1,54 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Only matters when LLM_PROVIDER=ollama with the local-llm profile:
+      # points the ollama python client at the ollama service by name
+      # instead of localhost.
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      # SQLite files, FAISS index, and generated images/logs persist across
+      # rebuilds instead of resetting every `docker compose up --build`.
+      - ./database:/app/database
+      - ./vectorstore:/app/vectorstore
+      - ./outputs:/app/outputs
+      # Avoids re-downloading the RAG embedding model on every container recreate.
+      - hf-cache:/root/.cache/huggingface
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+  # Optional local Ollama server. Not started by default -- only pulled in
+  # with `docker compose --profile local-llm up`, so LLM_PROVIDER=openai
+  # users don't download an unused image. If you use this, either set
+  # LLM_PROVIDER=ollama in .env, or point OLLAMA_HOST at a different host
+  # if you're running Ollama outside Docker instead.
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["local-llm"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  hf-cache:
+  ollama-data:

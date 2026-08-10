@@ -1,0 +1,24 @@
+# Python backend (FastAPI). Only what api/app.py's import graph needs —
+# main.py/demo.py/ui.py (console entry points) aren't copied since this
+# image's job is just the web API.
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY agents/ agents/
+COPY api/ api/
+COPY core/ core/
+COPY database/ database/
+COPY documents/ documents/
+COPY exception/ exception/
+COPY config.py logger.py ./
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/healthz')" || exit 1
+
+CMD ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]

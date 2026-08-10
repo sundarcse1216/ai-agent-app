@@ -6,3 +6,9 @@ __pycache__/
 .env
 /frontend/node_modules/
 /frontend/dist/
+/.claude/
+/.idea/ai-agent-app.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/.idea/inspectionProfiles/profiles_settings.xml
