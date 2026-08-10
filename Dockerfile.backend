@@ -14,11 +14,19 @@ COPY core/ core/
 COPY database/ database/
 COPY documents/ documents/
 COPY exception/ exception/
+# Committed pre-built FAISS index (see vectorstore/faiss_index/) — docker
+# compose ships this via a bind mount instead, but a plain `docker build`
+# (e.g. on Render, which has no such mount) needs it copied in, or
+# RAGAgent silently rebuilds it from documents/ on every cold start.
+COPY vectorstore/ vectorstore/
 COPY config.py logger.py ./
 
 EXPOSE 8000
 
+# $PORT is set by Render (and similar PaaS) at runtime; defaults to 8000 for
+# local `docker compose up` where it's unset. Shell form (not exec-form JSON
+# array) so the ${PORT:-8000} expansion actually happens.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/healthz')" || exit 1
+  CMD python -c "import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('PORT', '8000') + '/api/healthz')" || exit 1
 
-CMD ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000}

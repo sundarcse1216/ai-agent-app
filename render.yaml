@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ai-agent-app-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile.backend
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: LLM_PROVIDER
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_CHAT_MODEL
+        value: gpt-4o-mini
+      - key: WEATHER_API_KEY
+        sync: false
+      - key: MAX_COST_PER_SESSION_USD
+        value: "0.0010"
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: LANGCHAIN_TRACING_V2
+        value: "false"

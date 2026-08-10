@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -11,9 +12,15 @@ from core.router import Router
 from database.setup_company_database import setup_company_database
 from database.setup_events_database import setup_events_database
 
-# Vite's default dev server origin. Docker/production origins get added
-# when this is containerized (later phase).
+# Vite's default dev server origin, always allowed. Production origins
+# (e.g. the Netlify site) are added via ALLOWED_ORIGINS, a comma-separated
+# env var, so this doesn't need a code change per deploy target.
 DEV_FRONTEND_ORIGIN = "http://localhost:5173"
+EXTRA_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 
 @asynccontextmanager
@@ -38,7 +45,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[DEV_FRONTEND_ORIGIN],
+        allow_origins=[DEV_FRONTEND_ORIGIN, *EXTRA_ORIGINS],
         allow_methods=["*"],
         allow_headers=["*"],
         # Custom response headers aren't visible to browser JS unless
