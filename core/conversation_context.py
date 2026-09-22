@@ -12,10 +12,9 @@ record_turn() after every turn, for every intent, so any later turn (by
 any agent) can see what was said earlier regardless of which agent said it.
 
 Each stateful agent converts session.turns into whatever message format
-its own call path needs (ChatAgent: role/content dicts; RAGAgent:
-LangChain HumanMessage/AIMessage). WeatherAgent/RecommendationAgent just
-read the raw query text out of it for single-slot extraction context (see
-format_recent_turns).
+its own call path needs (ChatAgent/RAGAgent: LangChain HumanMessage/
+AIMessage). WeatherAgent/RecommendationAgent just read the raw query text
+out of it for single-slot extraction context (see format_recent_turns).
 """
 from config import MEMORY_WINDOW
 from logger import logger

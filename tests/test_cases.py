@@ -405,40 +405,51 @@ class TestWeatherAgent(unittest.TestCase):
             WeatherAgent().get_weather("InvalidXYZ")
         self.assertIn("No matching location found", str(ctx.exception))
 
-    @patch("agents.weather_agent.LLMService.chat")
+    @staticmethod
+    def _mock_extraction_chain(location):
+        """WeatherAgent's LLM boundary is now build_extraction_chain()
+        (LangChain prompt | model.with_structured_output(LocationExtraction)
+        LCEL chain), not LLMService.chat — mock at that seam instead so
+        these tests don't make a real LLM call."""
+        from agents.weather_agent import LocationExtraction
+        mock_chain = MagicMock()
+        mock_chain.invoke.return_value = LocationExtraction(location=location)
+        return mock_chain
+
+    @patch("agents.weather_agent.build_extraction_chain")
     @patch("agents.weather_agent.requests.get")
-    def test_handle_no_location_extracted(self, mock_get, mock_llm):
+    def test_handle_no_location_extracted(self, mock_get, mock_build_chain):
         from agents.weather_agent import WeatherAgent
-        mock_llm.return_value = json.dumps({"location": None})
+        mock_build_chain.return_value = self._mock_extraction_chain(None)
         result = WeatherAgent().handle("what is the weather?")
         self.assertIn("couldn't determine", result)
         mock_get.assert_not_called()
 
-    @patch("agents.weather_agent.LLMService.chat")
+    @patch("agents.weather_agent.build_extraction_chain")
     @patch("agents.weather_agent.requests.get")
-    def test_handle_empty_query(self, mock_get, mock_llm):
+    def test_handle_empty_query(self, mock_get, mock_build_chain):
         from agents.weather_agent import WeatherAgent
         result = WeatherAgent().handle("   ")
         self.assertIn("valid query", result)
-        mock_llm.assert_not_called()
+        mock_build_chain.assert_not_called()
 
-    @patch("agents.weather_agent.LLMService.chat")
+    @patch("agents.weather_agent.build_extraction_chain")
     @patch("agents.weather_agent.requests.get")
-    def test_handle_valid_city(self, mock_get, mock_llm):
+    def test_handle_valid_city(self, mock_get, mock_build_chain):
         from agents.weather_agent import WeatherAgent
-        mock_llm.return_value = json.dumps({"location": "Singapore"})
+        mock_build_chain.return_value = self._mock_extraction_chain("Singapore")
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = MOCK_WEATHER_RESPONSE
         result = WeatherAgent().handle("Weather in Singapore")
         self.assertIn("Singapore", result)
         self.assertIn("30", result)
 
-    @patch("agents.weather_agent.LLMService.chat")
+    @patch("agents.weather_agent.build_extraction_chain")
     @patch("agents.weather_agent.requests.get")
-    def test_handle_uses_cache_on_repeat(self, mock_get, mock_llm):
+    def test_handle_uses_cache_on_repeat(self, mock_get, mock_build_chain):
         from agents.weather_agent import WeatherAgent, weather_cache
         weather_cache.clear()
-        mock_llm.return_value = json.dumps({"location": "Singapore"})
+        mock_build_chain.return_value = self._mock_extraction_chain("Singapore")
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = MOCK_WEATHER_RESPONSE
         agent = WeatherAgent()
