@@ -6,15 +6,6 @@ from core.router import Router, Session
 from logger import logger
 from ui import Spinner
 
-messages = {
-    "weather": "🌤 Checking weather",
-    "sql": "🗄 Querying database",
-    "recommendation": "🎯 Finding the best event",
-    "rag": "📚 Searching documents",
-    "image": "🎨 Creating your image",
-    "chat": "💬 Thinking"
-}
-
 
 class Controller:
 
@@ -30,7 +21,7 @@ class Controller:
         intent = self.classifier.classify(query)
         logger.info(f"Detected Intent: {intent}")
 
-        spinner = Spinner(messages[intent])
+        spinner = Spinner(ResponseFormatter.LOADING_MESSAGES[intent])
         spinner.start()
         response = self.router.route(intent, query, self.session)
         spinner.stop()

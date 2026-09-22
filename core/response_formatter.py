@@ -8,6 +8,15 @@ class ResponseFormatter:
         "chat": "💬 AI Assistant",
     }
 
+    LOADING_MESSAGES = {
+        "weather": "🌤 Checking weather",
+        "sql": "🗄 Querying database",
+        "recommendation": "🎯 Finding the best event",
+        "rag": "📚 Searching documents",
+        "image": "🎨 Creating your image",
+        "chat": "💬 Thinking",
+    }
+
     @staticmethod
     def success(agent, response, elapsed):
         title = ResponseFormatter.AGENT_NAMES.get(
