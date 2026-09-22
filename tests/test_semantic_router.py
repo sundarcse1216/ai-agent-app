@@ -38,7 +38,7 @@ def build_router(vectors: dict[str, list[float]], exemplars: dict[str, list[str]
     from core.semantic_router import SemanticRouter
 
     with patch(
-        "core.semantic_router._load_embedding_model",
+        "core.semantic_router.load_embedding_model",
         return_value=FakeEmbeddingModel(vectors),
     ), patch("core.semantic_router.INTENT_EXEMPLARS", exemplars):
         return SemanticRouter()

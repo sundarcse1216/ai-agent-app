@@ -31,19 +31,20 @@ CONFIDENCE_THRESHOLD = 0.55
 
 
 @functools.lru_cache(maxsize=1)
-def _load_embedding_model(model_name: str = EMBEDDING_MODEL) -> SentenceTransformer:
+def load_embedding_model(model_name: str = EMBEDDING_MODEL) -> SentenceTransformer:
     # Cached so repeated SemanticRouter() construction (e.g. across tests)
     # reuses the same loaded model weights instead of reloading them from
-    # disk every time. In the running app there's only ever one instance
-    # anyway (built once at Router startup, same lifecycle as RAGAgent's
-    # FAISS index).
+    # disk every time. Also reused by agents/rag_agent.py's embeddings
+    # wrapper — bge-small-en-v1.5 is the same model both need, and a
+    # 512MB-RAM deploy target (e.g. Render's free tier) can't afford
+    # loading two independent copies of it into memory.
     return SentenceTransformer(model_name)
 
 
 class SemanticRouter:
 
     def __init__(self, model_name: str = EMBEDDING_MODEL):
-        self._model = _load_embedding_model(model_name)
+        self._model = load_embedding_model(model_name)
         # {intent: (n_exemplars, dim) L2-normalized embedding matrix}, built
         # once at construction so cosine similarity is a plain dot product.
         self._exemplar_embeddings: dict[str, np.ndarray] = {

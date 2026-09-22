@@ -4,8 +4,8 @@ from langchain.chains import create_history_aware_retriever, create_retrieval_ch
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_community.document_loaders import PyMuPDFLoader, TextLoader
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.embeddings import Embeddings
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_ollama import ChatOllama
@@ -23,6 +23,7 @@ from config import (
 )
 from core.cache import make_cache
 from core.cost_tracking import calculate_openai_cost
+from core.semantic_router import EMBEDDING_MODEL, load_embedding_model
 from logger import logger
 
 rag_cache = make_cache()
@@ -111,8 +112,33 @@ def split_chunk(documents, chunk_size=500, chunk_overlap=50):
     return chunks
 
 
+class _SharedSentenceTransformerEmbeddings(Embeddings):
+    """LangChain Embeddings adapter over core.semantic_router's cached
+    SentenceTransformer, instead of langchain_huggingface.HuggingFaceEmbeddings
+    constructing its own separate copy of the same bge-small-en-v1.5 model.
+    Two independent copies of a transformer model in one process is the kind
+    of thing that fits fine on a laptop but OOMs a 512MB-RAM deploy target
+    (e.g. Render's free tier) — confirmed live, not theoretical. Mirrors
+    HuggingFaceEmbeddings._embed's behavior (newline stripping, no
+    encode_kwargs) so the persisted FAISS index (built under the old
+    embeddings class) stays compatible."""
+
+    def __init__(self, model_name: str = EMBEDDING_MODEL):
+        self._model = load_embedding_model(model_name)
+
+    def _encode(self, texts: list[str]) -> list[list[float]]:
+        texts = [t.replace("\n", " ") for t in texts]
+        return self._model.encode(texts).tolist()
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        return self._encode(texts)
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._encode([text])[0]
+
+
 def generate_embedding():
-    return HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+    return _SharedSentenceTransformerEmbeddings()
 
 
 def create_vector_db(index_name, chunks, embedding_model):
