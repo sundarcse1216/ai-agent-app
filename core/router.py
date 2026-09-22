@@ -60,18 +60,36 @@ class Session:
 class Router:
 
     def __init__(self):
-        weather_agent = WeatherAgent()
-        self.agents = {
-            "weather": weather_agent,
-            "sql": SQLAgent(),
-            "recommendation": RecommendationAgent(weather_agent),
-            "rag": RAGAgent(),
-            "image": ImageAgent(),
-            "chat": ChatAgent(),
+        # Agents are built lazily, on first use of their intent, instead of
+        # all six eagerly here. RAGAgent alone (embedding model + FAISS
+        # index) combined with the classifier's own embedding model was
+        # enough to OOM a 512MB-RAM deploy target (e.g. Render's free tier)
+        # before the app ever served a request — confirmed live, not
+        # theoretical. Lazily building means a deploy that never gets a RAG
+        # question never pays RAGAgent's memory cost. Each agent is still
+        # built at most once and reused for the process lifetime (same
+        # pooled, stateless-across-sessions contract as before) — this
+        # defers construction, it doesn't rebuild per request.
+        self._agent_factories = {
+            "weather": lambda: WeatherAgent(),
+            "sql": lambda: SQLAgent(),
+            "recommendation": lambda: RecommendationAgent(self._get_agent("weather")),
+            "rag": lambda: RAGAgent(),
+            "image": lambda: ImageAgent(),
+            "chat": lambda: ChatAgent(),
         }
+        self.agents = {}
+
+    def _get_agent(self, intent):
+        if intent not in self.agents:
+            factory = self._agent_factories.get(intent)
+            if factory is None:
+                return None
+            self.agents[intent] = factory()
+        return self.agents[intent]
 
     def route(self, intent, query, session: Session):
-        agent = self.agents.get(intent)
+        agent = self._get_agent(intent)
 
         if not agent:
             return "Sorry, I couldn't determine the appropriate agent."
@@ -105,7 +123,7 @@ class Router:
         call emitted as one result event — same context-threading logic
         either way, just via BaseAgent.handle_stream's NotImplementedError
         as the signal to fall back."""
-        agent = self.agents.get(intent)
+        agent = self._get_agent(intent)
 
         if not agent:
             yield {"type": "result", "response": "Sorry, I couldn't determine the appropriate agent."}

@@ -1,11 +1,9 @@
 import os
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from api.dependencies import get_router
 from config import DATABASE_PATH, EVENTS_DATABASE_PATH, FAISS_INDEX, LLM_PROVIDER, OPENAI_API_KEY
-from core.router import Router as AgentRouter
 
 router = APIRouter()
 
@@ -18,15 +16,22 @@ def healthz():
 
 
 @router.get("/readyz")
-def readyz(agent_router: AgentRouter = Depends(get_router)):
+def readyz():
     """Readiness: can this instance actually serve traffic. Checks the
     things that would make every request fail if missing, without doing
     anything as expensive as a full LLM generation on every probe hit."""
     checks = {
         "company_database": os.path.exists(DATABASE_PATH),
         "events_database": os.path.exists(EVENTS_DATABASE_PATH),
+        # Router now builds agents lazily on first use of their intent
+        # (see core/router.py), not eagerly at startup — a 512MB-RAM deploy
+        # target OOM'd loading RAGAgent's embedding model + FAISS index
+        # before serving a single request. So "faiss_index" (the file
+        # RAGAgent needs, checkable without constructing it) is the
+        # meaningful precondition here now, not whether RAGAgent has
+        # already been built — a fresh instance that's never had a RAG
+        # question would otherwise permanently report not-ready.
         "faiss_index": os.path.exists(FAISS_INDEX),
-        "rag_agent_loaded": "rag" in agent_router.agents,
         "llm_provider_configured": _check_llm_provider(),
     }
     ready = all(checks.values())
